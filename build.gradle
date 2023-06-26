@@ -24,7 +24,6 @@ dependencies {
 		mappings variantOf(libs.feather.mappings) { classifier 'v2' }
 		ploceus.nestedMappings(it) // remove this line if not using nests
 	}
-	nests libs.nests // remove this line if not using nests
 
 	modImplementation libs.quilt.loader
 }

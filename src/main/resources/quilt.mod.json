@@ -5,10 +5,10 @@
 		"id": "example_mod",
 		"version": "${version}",
 		"metadata": {
-			"name": "Mod Name",
-			"description": "A short description of your mod.",
+			"name": "boatOptimizer9000",
+			"description": "make boats less laggy",
 			"contributors": {
-				"Your name here": "Owner"
+				"Your name here": "Emilia"
 			},
 			"contact": {
 				"homepage": "https://example.com/",
@@ -25,7 +25,7 @@
 			},
 			{
 				"id": "minecraft",
-				"versions": "1.7.x"
+				"versions": "1.12.2"
 			}
 		]
 	},
