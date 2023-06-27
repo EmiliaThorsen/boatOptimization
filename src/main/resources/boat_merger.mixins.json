@@ -1,15 +1,12 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.example.example_mod.mixin",
+  "package": "io.github.EmiliaThorsen.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "boatEntityMixin",
     "LivingEntityMixin",
     "worldMixin"
-  ],
-  "client": [
-    "TitleScreenMixin"
   ],
   "injectors": {
     "defaultRequire": 1

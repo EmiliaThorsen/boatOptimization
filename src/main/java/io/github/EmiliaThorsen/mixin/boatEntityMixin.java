@@ -1,7 +1,7 @@
-package com.example.example_mod.mixin;
+package io.github.EmiliaThorsen.mixin;
 
-import com.example.example_mod.boatDataGetter;
-import com.example.example_mod.worldInterface;
+import io.github.EmiliaThorsen.boatDataGetter;
+import io.github.EmiliaThorsen.worldInterface;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFilter;
 import net.minecraft.entity.MoverType;
@@ -157,30 +157,25 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 				this.m_2983793();
 				this.world.sendPacketToServer(new C_9151277(this.m_6343325(0), this.m_6343325(1)));
 			}
-			if(getStackSize() > 1) {
-				double curX = this.x;
-				double curY = this.y;
-				double curZ = this.z;
-				double curVelocityX = this.velocityX;
-				double curVelocityY = this.velocityY;
-				double curVelocityZ = this.velocityZ;
-				this.move(MoverType.SELF, this.velocityX, this.velocityY, this.velocityZ);
-				if(curX != this.x || curY != this.y || curZ != this.z) {
-					hasMoved = true;
-					int index = world.entities.indexOf(this) + 1;
-					for(int i = 0; i < getStackSize() - 1; i++) {
-						BoatEntity subBoat = new BoatEntity(world, curX, curY, curZ);
-						subBoat.velocityX = curVelocityX;
-						subBoat.velocityY = curVelocityY;
-						subBoat.velocityZ = curVelocityZ;
-						((worldInterface)world).addBoatsAfterBoat(subBoat, index);
-					}
-					setStackSize(1);
 
+			double curX = this.x;
+			double curY = this.y;
+			double curZ = this.z;
+			double curVelocityX = this.velocityX;
+			double curVelocityY = this.velocityY;
+			double curVelocityZ = this.velocityZ;
+			this.move(MoverType.SELF, this.velocityX, this.velocityY, this.velocityZ);
+			if(curX != this.x || curZ != this.z) {
+				hasMoved = true;
+				int index = world.entities.indexOf(this) + 1;
+				for(int i = 0; i < getStackSize() - 1; i++) {
+					BoatEntity subBoat = new BoatEntity(world, curX, curY, curZ);
+					subBoat.velocityX = curVelocityX;
+					subBoat.velocityY = curVelocityY;
+					subBoat.velocityZ = curVelocityZ;
+					((worldInterface)world).addBoatsAfterBoat(subBoat, index);
 				}
-
-			} else {
-				this.move(MoverType.SELF, this.velocityX, this.velocityY, this.velocityZ);
+				setStackSize(1);
 			}
 		} else {
 			this.velocityX = 0.0;
@@ -209,9 +204,11 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 
 		this.checkBlockCollisions();
 
+		//boat merging code
 		if(!hasMoved && !world.isClient && this.getDamage() == 0 && this.velocityX == 0 && this.velocityY == 0 && this.velocityZ == 0  && !this.hasPassengers()) {
 			int index = world.entities.indexOf(this);
 			if(world.entities.size() > index + 1) {
+				//only merges boats that tick directly after to keep ticking order consistent
 				Entity nextEntity = world.entities.get(index + 1);
 				if (nextEntity instanceof BoatEntity) {
 					BoatEntity boat = (BoatEntity) nextEntity;
@@ -290,7 +287,7 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 
 	/**
 	 * @author Emilia
-	 * @reason this is the point of the mod
+	 * @reason make merged boats deal with damage correctly
 	 */
 	@Overwrite
 	public boolean damage(DamageSource source, float amount) {
@@ -331,7 +328,7 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 
 	/**
 	 * @author Emilia
-	 * @reason this is the point of the mod
+	 * @reason make interaction unmerge a boat correctly
 	 */
 	@Overwrite
 	public boolean interact(PlayerEntity playerEntity, InteractionHand interactionHand) {

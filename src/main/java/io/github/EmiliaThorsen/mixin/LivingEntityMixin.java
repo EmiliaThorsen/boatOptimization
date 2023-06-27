@@ -1,6 +1,6 @@
-package com.example.example_mod.mixin;
+package io.github.EmiliaThorsen.mixin;
 
-import com.example.example_mod.boatDataGetter;
+import io.github.EmiliaThorsen.boatDataGetter;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFilter;
 import net.minecraft.entity.damage.DamageSource;
@@ -16,7 +16,6 @@ import java.util.List;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin extends Entity {
-
 
 	public LivingEntityMixin(World world) {
 		super(world);
@@ -34,7 +33,7 @@ public class LivingEntityMixin extends Entity {
 
 			if (i > 0 && this.random.nextInt(4) == 0) {
 				int j = 0;
-
+				//check if a touching entity is a boat and add its count
 				for (Entity entity : list) j += (!entity.hasVehicle()) ? (entity instanceof BoatEntity) ? ((boatDataGetter)entity).getStackSize() : 1 : 0;
 
 				if (j > i - 1) this.damage(DamageSource.CRAMMING, 6.0F);

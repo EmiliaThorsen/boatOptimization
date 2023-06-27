@@ -1,7 +1,6 @@
-package com.example.example_mod.mixin;
+package io.github.EmiliaThorsen.mixin;
 
-
-import com.example.example_mod.worldInterface;
+import io.github.EmiliaThorsen.worldInterface;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -24,13 +23,10 @@ public class worldMixin implements worldInterface {
 		this.entities = entities;
 	}
 
-	public boolean addBoatsAfterBoat(Entity entity, int index) {
+	public void addBoatsAfterBoat(Entity entity, int index) {
 		this.getChunkAt(MathHelper.floor(entity.x / 16.0), MathHelper.floor(entity.z / 16.0)).addEntity(entity);
-
 		this.entities.add(index, entity);
 		this.onEntityAdded(entity);
-		return true;
-
 	}
 
 	@Shadow
