@@ -1,6 +1,6 @@
 package io.github.EmiliaThorsen.mixin;
 
-import io.github.EmiliaThorsen.worldInterface;
+import io.github.EmiliaThorsen.WorldInterface;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -10,18 +10,15 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(World.class)
-public class worldMixin implements worldInterface {
+public abstract class WorldMixin implements WorldInterface {
 	@Mutable
 	@Final
 	@Shadow
-	public final List<Entity> entities;
-
-	public worldMixin(List<Entity> entities) {
-		this.entities = entities;
-	}
+	public final List<Entity> entities = new ArrayList<>();
 
 	public void addBoatsAfterBoat(Entity entity, int index) {
 		this.getChunkAt(MathHelper.floor(entity.x / 16.0), MathHelper.floor(entity.z / 16.0)).addEntity(entity);
@@ -36,5 +33,4 @@ public class worldMixin implements worldInterface {
 
 	@Shadow
 	protected void onEntityAdded(Entity entity) {}
-
 }

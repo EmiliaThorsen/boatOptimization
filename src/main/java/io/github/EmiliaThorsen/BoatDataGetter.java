@@ -1,6 +1,6 @@
 package io.github.EmiliaThorsen;
 
-public interface boatDataGetter {
+public interface BoatDataGetter {
 	void setStackSize(int size);
 	int getStackSize();
 }

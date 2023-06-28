@@ -4,9 +4,9 @@
   "package": "io.github.EmiliaThorsen.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "boatEntityMixin",
+    "BoatEntityMixin",
     "LivingEntityMixin",
-    "worldMixin"
+    "WorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1

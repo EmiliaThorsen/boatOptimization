@@ -1,25 +1,21 @@
 package io.github.EmiliaThorsen.mixin;
 
-import io.github.EmiliaThorsen.boatDataGetter;
+import io.github.EmiliaThorsen.BoatDataGetter;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFilter;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.living.LivingEntity;
 import net.minecraft.entity.vehicle.BoatEntity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.List;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin extends Entity {
+public abstract class LivingEntityMixin extends Entity {
 
-	public LivingEntityMixin(World world) {
-		super(world);
-	}
+	public LivingEntityMixin(World world) {super(world);}
 
 	/**
 	 * @author Emilia
@@ -34,7 +30,7 @@ public class LivingEntityMixin extends Entity {
 			if (i > 0 && this.random.nextInt(4) == 0) {
 				int j = 0;
 				//check if a touching entity is a boat and add its count
-				for (Entity entity : list) j += (!entity.hasVehicle()) ? (entity instanceof BoatEntity) ? ((boatDataGetter)entity).getStackSize() : 1 : 0;
+				for (Entity entity : list) j += (!entity.hasVehicle()) ? (entity instanceof BoatEntity) ? ((BoatDataGetter)entity).getStackSize() : 1 : 0;
 
 				if (j > i - 1) this.damage(DamageSource.CRAMMING, 6.0F);
 			}
@@ -43,23 +39,5 @@ public class LivingEntityMixin extends Entity {
 				entity.push(this);
 			}
 		}
-	}
-
-	@Shadow
-	@Override
-	protected void initDataTracker() {
-
-	}
-
-	@Shadow
-	@Override
-	public void readCustomNbt(NbtCompound nbt) {
-
-	}
-
-	@Shadow
-	@Override
-	public void writeCustomNbt(NbtCompound nbt) {
-
 	}
 }

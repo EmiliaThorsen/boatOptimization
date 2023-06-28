@@ -1,7 +1,7 @@
 package io.github.EmiliaThorsen.mixin;
 
-import io.github.EmiliaThorsen.boatDataGetter;
-import io.github.EmiliaThorsen.worldInterface;
+import io.github.EmiliaThorsen.BoatDataGetter;
+import io.github.EmiliaThorsen.WorldInterface;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFilter;
 import net.minecraft.entity.MoverType;
@@ -31,7 +31,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(BoatEntity.class)
-public class boatEntityMixin extends Entity implements boatDataGetter {
+public abstract class BoatEntityMixin extends Entity implements BoatDataGetter {
 	@Shadow
 	private BoatEntity.Status f_9935108;
 
@@ -44,18 +44,7 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 	@Mutable
 	@Final
 	@Shadow
-	private final float[] f_8753258;
-
-	public boatEntityMixin(World world, float[] f87532581) {
-		super(world);
-		f_8753258 = f87532581;
-	}
-
-	@Shadow
-	@Override
-	protected void initDataTracker() {
-
-	}
+	private final float[] f_8753258 = new float[0];
 
 	@Shadow
 	public void setBreakingWindow(int value) {}
@@ -102,11 +91,12 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 
 	private static final DataAttribute<Integer> stackSize  = DataTracker.defineId(BoatEntity.class, DataSerializers.INTEGER_SERIALIZER);
 
+	public BoatEntityMixin(World world) {super(world);}
+
 	@Inject(method = "initDataTracker", at = @At("HEAD"))
 	public void addTracker(CallbackInfo ci) {
 		this.dataTracker.createData(stackSize, 1);
 	}
-
 
 	public void setStackSize(int value) {
 		this.dataTracker.setValue(stackSize, value);
@@ -125,11 +115,13 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 	public void tick() {
 		this.f_9935108 = this.f_1162355;
 		this.f_1162355 = this.m_0243142();
-		if (this.f_1162355 != BoatEntity.Status.UNDER_WATER && this.f_1162355 != BoatEntity.Status.UNDER_FLOWING_WATER) {this.f_5538943 = 0.0F;} else {++this.f_5538943;}
-
-		if (this.getBreakingWindow() > 0) {
-			this.setBreakingWindow(this.getBreakingWindow() - 1);
+		if (this.f_1162355 != BoatEntity.Status.UNDER_WATER && this.f_1162355 != BoatEntity.Status.UNDER_FLOWING_WATER) {
+			this.f_5538943 = 0.0F;
+		} else {
+			++this.f_5538943;
 		}
+
+		if (this.getBreakingWindow() > 0) this.setBreakingWindow(this.getBreakingWindow() - 1);
 
 		this.prevX = this.x;
 		this.prevY = this.y;
@@ -140,9 +132,7 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 			if(this.getDamage() < 0) setDamage(0);
 		}
 
-		if (!this.world.isClient && this.f_5538943 >= 60.0F) {
-			this.yeetPassengers();
-		}
+		if (!this.world.isClient && this.f_5538943 >= 60.0F) this.yeetPassengers();
 		super.tick();
 		this.m_6603229();
 
@@ -158,22 +148,19 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 				this.world.sendPacketToServer(new C_9151277(this.m_6343325(0), this.m_6343325(1)));
 			}
 
-			double curX = this.x;
-			double curY = this.y;
-			double curZ = this.z;
 			double curVelocityX = this.velocityX;
 			double curVelocityY = this.velocityY;
 			double curVelocityZ = this.velocityZ;
 			this.move(MoverType.SELF, this.velocityX, this.velocityY, this.velocityZ);
-			if(curX != this.x || curZ != this.z) {
+			if(prevX != this.x || prevY != this.y || prevZ != this.z) {
 				hasMoved = true;
 				int index = world.entities.indexOf(this) + 1;
 				for(int i = 0; i < getStackSize() - 1; i++) {
-					BoatEntity subBoat = new BoatEntity(world, curX, curY, curZ);
+					BoatEntity subBoat = new BoatEntity(world, prevX, prevY, prevZ);
 					subBoat.velocityX = curVelocityX;
 					subBoat.velocityY = curVelocityY;
 					subBoat.velocityZ = curVelocityZ;
-					((worldInterface)world).addBoatsAfterBoat(subBoat, index);
+					((WorldInterface)world).addBoatsAfterBoat(subBoat, index);
 				}
 				setStackSize(1);
 			}
@@ -213,7 +200,7 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 				if (nextEntity instanceof BoatEntity) {
 					BoatEntity boat = (BoatEntity) nextEntity;
 					if (!boat.removed && boat.x == this.x && boat.y == this.y && boat.z == this.z && boat.velocityX == 0 && boat.velocityY == 0 && boat.velocityZ == 0 && boat.getDamage() == 0 && !boat.hasPassengers()) {
-						((boatDataGetter) boat).setStackSize(this.getStackSize() + ((boatDataGetter) boat).getStackSize());
+						((BoatDataGetter) boat).setStackSize(this.getStackSize() + ((BoatDataGetter) boat).getStackSize());
 						world.removeEntity(this);
 						return;
 					}
@@ -235,8 +222,8 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 					if (bl && this.getPassengers().size() < 2 && !entity.hasVehicle() && entity.width < this.width && entity instanceof LivingEntity && !(entity instanceof WaterMobEntity) && !(entity instanceof PlayerEntity)) {
 						if(getStackSize() > 1) {
 							BoatEntity subBoat = new BoatEntity(world, this.x, this.y, this.z);
-							((boatDataGetter)subBoat).setStackSize(this.getStackSize() - 1);
-							((worldInterface)world).addBoatsAfterBoat(subBoat, world.entities.indexOf(this) + 1);
+							((BoatDataGetter)subBoat).setStackSize(this.getStackSize() - 1);
+							((WorldInterface)world).addBoatsAfterBoat(subBoat, world.entities.indexOf(this) + 1);
 							setStackSize(1);
 						}
 						entity.m_9441016(this);
@@ -303,8 +290,8 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 			} else {
 				if(getStackSize() > 1) {
 					BoatEntity subBoat = new BoatEntity(world, this.x, this.y, this.z);
-					((boatDataGetter)subBoat).setStackSize(this.getStackSize() - 1);
-					((worldInterface)world).addBoatsAfterBoat(subBoat, world.entities.indexOf(this) + 1);
+					((BoatDataGetter)subBoat).setStackSize(this.getStackSize() - 1);
+					((WorldInterface)world).addBoatsAfterBoat(subBoat, world.entities.indexOf(this) + 1);
 					setStackSize(1);
 				}
 				this.setAnitmationSide(-this.getAnimationSide());
@@ -338,8 +325,8 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 			if (!this.world.isClient && this.f_5538943 < 60.0F) {
 				if(getStackSize() > 1) {
 					BoatEntity subBoat = new BoatEntity(world, this.x, this.y, this.z);
-					((boatDataGetter)subBoat).setStackSize(this.getStackSize() - 1);
-					((worldInterface)world).addBoatsAfterBoat(subBoat, world.entities.indexOf(this) + 1);
+					((BoatDataGetter)subBoat).setStackSize(this.getStackSize() - 1);
+					((WorldInterface)world).addBoatsAfterBoat(subBoat, world.entities.indexOf(this) + 1);
 					setStackSize(1);
 				}
 				playerEntity.m_9441016(this);
@@ -348,35 +335,13 @@ public class boatEntityMixin extends Entity implements boatDataGetter {
 		}
 	}
 
-	/**
-	 * @author Emilia
-	 * @reason make it save correctly
-	 */
-	@Overwrite
-	public void writeCustomNbt(NbtCompound nbt) {
-		nbt.putString("Type", this.getType().getName());
+	@Inject(method = "writeCustomNbt", at = @At("TAIL"))
+	public void addCountNBT(NbtCompound nbt, CallbackInfo ci) {
 		nbt.putInt("stackCount", getStackSize());
 	}
 
-	/**
-	 * @author Emilia
-	 * @reason make it save correctly
-	 */
-	@Overwrite
-	public void readCustomNbt(NbtCompound nbt) {
-		if (nbt.isType("Type", 8)) {
-			this.setType(BoatEntity.Type.byName(nbt.getString("Type")));
-		}
+	@Inject(method = "readCustomNbt", at = @At("TAIL"))
+	public void readCountNBT(NbtCompound nbt, CallbackInfo ci) {
 		if(nbt.getInt("stackCount") > 0) setStackSize(nbt.getInt("stackCount"));
-	}
-
-	@Shadow
-	public void setType(BoatEntity.Type type) {
-
-	}
-
-	@Shadow
-	public BoatEntity.Type getType() {
-		return null;
 	}
 }
